@@ -181,11 +181,35 @@ code, in this order:
 - Customer-facing validation messages showed library jargon, and the
   featured-products command crashed on Windows (caught by the AI itself).
 
-## Docker: verified by an independent review, not on my machine
+## Docker: verified on my machine
 
-Docker does not start on the machine I built this on (Docker Desktop needs
-the Windows Subsystem for Linux, which I have no admin rights to install).
-So I asked an independent reviewer, a separate Claude Code session in a
+On 20 November 2026, on commit `a58b94d`, the README was run from a fresh
+clone on my Mac (Docker Desktop). Claude Code ran the steps and drove the
+browser; the results below are what it observed.
+
+- `docker compose build --no-cache` then `up`: all four containers healthy
+  in 84 seconds, including pulling the MongoDB and Mailpit images (the Node
+  base image may already have been cached).
+- The five acceptance criteria in a browser: five products on the home
+  page; a category showed "Top rated" then "More in this category"; searching
+  "jacket" returned only the four jackets; a tile opened its product page;
+  an enquiry showed "Thank you" and the email arrived in Mailpit.
+- `docker compose exec api npm run featured:set -- 9 13 1 5 17`: the home
+  page showed those five, in that order.
+- Mailpit stopped: the customer still saw "Thank you"; the API logged
+  "saved but the email failed".
+- MongoDB stopped: the home page loaded in about 1 second, falling back to
+  best rated; an enquiry showed "We could not send your enquiry".
+- Fake Store unreachable (`FAKESTORE_BASE_URL=https://fakestore.invalid`):
+  the API logged "serving the bundled snapshot" and the catalogue and search
+  still worked.
+- Browser tests: 12/12 passed.
+
+## Docker: independent review
+
+Docker does not start on the Windows machine I built this on (Docker
+Desktop needs the Windows Subsystem for Linux, which I have no admin rights
+to install). So I also asked an independent reviewer, a separate Claude Code session in a
 Linux cloud container given only the brief and the repository, to run the
 README as a new reviewer would. Results, on commit `549c28b`:
 
@@ -212,9 +236,7 @@ proxy's certificate added. The project files were not changed.
 
 ## What is still not verified
 
-- The first-run time on a normal machine with nothing cached (image
-  downloads included). The README's "a few minutes" is an estimate.
-- Running on Windows or macOS with Docker Desktop.
+- Running on Windows with Docker Desktop.
 - The light-only fallback in a browser older than `light-dark()`.
 - Anything on AWS: the AWS mapping in `DECISIONS.md` is a design, not a
   deployment.
