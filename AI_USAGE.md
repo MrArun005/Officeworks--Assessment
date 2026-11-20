@@ -221,11 +221,11 @@ README as a new reviewer would. Results, on commit `549c28b`:
 - `docker compose exec api npm run featured:set -- 9 13 1 5 17`: the home
   page showed those five, in that order. A wrong number of ids was refused.
 - MongoDB integration tests against the stack's database: 3/3 passed.
-- Failure checks in Docker: with MongoDB stopped, the home page fell back to
-  best rated in about 1 second; with Mailpit stopped, the customer still saw
-  "Thank you" and the enquiry was recorded as failed; with Fake Store
-  unreachable, the bundled snapshot was served; invalid settings stopped the
-  API at startup with every problem listed.
+- Failure checks: with MongoDB stopped, the home page fell back to best
+  rated in about 1 second, and an invalid `SMTP_SECURE` stopped the API at
+  startup with a clear error. (Mailpit stopped and Fake Store unreachable
+  were checked by the same reviewer on an earlier commit, `620cf28`, and on
+  my Mac on `a58b94d`; see above.)
 - SMTP settings in `.env` reached the API container; with no `.env` it used
   Mailpit.
 
@@ -247,15 +247,20 @@ container.
 
 ## Time spent
 
-About 2.5 hours of my own time, all on 20 November 2026, spent on
-implementation and testing. The session itself was open from 11:33 to about
-17:05, but much of that was the AI working on its own (builds, test runs,
-the independent reviews, the failure tests) while I was away from it, so the
-session length is not my working time.
+About 3 hours of my own time, all on 20 November 2026. The session itself
+was open from 11:33 to about 17:05, but much of that was the AI working on
+its own (builds, test runs, the independent reviews, the failure tests)
+while I was away from it. I first wrote down the session length, then
+corrected it to my own hands-on time. The split is my estimate, because
+building, testing and fixing were interleaved.
 
 | Activity | Time |
 |---|---|
-| Implementation and testing (directing the AI, checking its output, using the app, reading test results) | about 2 h 30 min |
-| **Total** | **about 2 h 30 min** |
+| Planning (reading the brief, choosing the stack, checking constraints) | about 15 min |
+| Building (directing the AI and checking its output) | about 1 h 30 min |
+| Testing (using the app, the screen recording, reading test results) | about 35 min |
+| Reviewing (reading review findings, deciding what to fix or decline) | about 40 min |
+| **Total** | **about 3 h** |
 
-That is within the 2–3 hour time-box.
+That is at the top of the 2–3 hour time-box. The four additions listed in
+`DECISIONS.md` took a good part of it; I would cut them in a three-hour redo.
