@@ -209,9 +209,9 @@ browser; the results below are what it observed.
 
 Docker does not start on the Windows machine I built this on (Docker
 Desktop needs the Windows Subsystem for Linux, which I have no admin rights
-to install). So I also asked an independent reviewer, a separate Claude Code session in a
-Linux cloud container given only the brief and the repository, to run the
-README as a new reviewer would. Results, on commit `549c28b`:
+to install). So I also asked an independent reviewer, a separate Claude
+Code session in a Linux cloud container given only the brief and the
+repository, to run the README as a new reviewer would. Results, on commit `549c28b`:
 
 - `docker compose up --build`: all four containers healthy (web, api,
   mongo, mailpit) in about 40 seconds once the base images were downloaded.
@@ -248,7 +248,7 @@ container.
 ## Time spent
 
 About 2 hours of my own time, all on 20 November 2026. The session itself
-was open from 11:33 to about 17:05, but much of that was the AI working on
+was open from 11:33 to about 17:25, but much of that was the AI working on
 its own (builds, test runs, the independent reviews, the failure tests)
 while I was away from it. I first wrote down the session length, then
 corrected it to my own hands-on time. The split is my estimate, because
