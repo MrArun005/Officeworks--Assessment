@@ -84,7 +84,7 @@ Needs Node 24, the version the images use. The commands below are written
 for bash (Git Bash on Windows).
 
 ```bash
-(cd api && npm ci && npm test)   # 77 tests: rules, sources, cache, email, HTTP
+(cd api && npm ci && npm test)   # 98 tests: rules, sources, cache, email, HTTP, config (3 MongoDB tests run only with MONGODB_TEST_URI set)
 (cd web && npm ci && npm test)   # 26 tests: API client, product grid, view switch, light/dark switch, enquiry form, server action
 ```
 

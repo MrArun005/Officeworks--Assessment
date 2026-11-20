@@ -1,8 +1,5 @@
 # AI usage notes
 
-> TODO(Arun) before submitting: read every line of this file against what you
-> actually did, fill in the TODO sections, then delete this note.
-
 ## Tools and models
 
 - **Claude Code** (VS Code extension), one session. Models: Claude Fable 5.2
@@ -12,9 +9,15 @@
 - **Review subagents**: four independent Claude Code reviewers, started in
   parallel from the same session, each given only the brief and the code (not
   the builder's conclusions). See moment 6.
-- **A second AI assistant** produced one screen-by-screen UI audit, which I
-  pasted into the main session (moment 9).
-  TODO(Arun): name the tool and model that wrote that audit.
+- **A separate Claude session** produced one screen-by-screen UI audit, which
+  I pasted into the main session (moment 9). Claude was the only AI tool used
+  on this project.
+
+**About the commit history.** The work was done in one long session and
+committed as logical steps (API, web, end-to-end tests, containers, docs)
+once the first version worked. The history shows the shape of the result,
+not the order in which it was typed. Each later round of changes was
+committed the same way, as one or two commits at the end of the round.
 
 ## Agent instruction files (committed)
 
@@ -65,8 +68,14 @@ code, in this order:
 3. **"I want to be the best guy to solve this problem."** I did not pick
    between the three MongoDB options; the AI went ahead with its own
    recommendation. That was its decision, not mine.
-   TODO(Arun): say here whether, after reviewing it, you kept that decision
-   and why (or what you changed).
+   After reviewing it, I kept it. MongoDB holds only what Fake Store cannot:
+   the five products I choose for the home page, and the enquiries. Products
+   stay with the product source, so changing the source never means a data
+   migration. Copying every product into MongoDB would have made us the
+   owner of data that someone else keeps up to date; cutting MongoDB would
+   have lost enquiries whenever the email failed. It is free, runs in the
+   same `docker compose up`, and has an AWS-hosted equivalent (DocumentDB or
+   MongoDB Atlas on AWS) if it moves to production.
 
 4. **"Check the technical constraints and tell me what should be the proper
    way."** I stopped the build to have each constraint checked against the
@@ -107,7 +116,7 @@ code, in this order:
    what found three layout bugs (see "wrong", item 8). The sample data is
    not in the repository and the submission still reads Fake Store only.
 
-9. **A second opinion, pasted in.** I asked another AI assistant for a UI
+9. **A second opinion, pasted in.** I asked a separate Claude session for a UI
    audit and pasted its report into the session. The AI did not apply it
    wholesale. It checked each point against the current code and found the
    audit described the old design: six points were already done, three were
@@ -277,18 +286,26 @@ code, in this order:
   `docker compose config`, the images' Alpine native packages were checked in
   the lockfiles, and the same built code (including the web standalone
   server the image runs) passed all 12 browser tests outside Docker. But the
-  images were never built or started.
-  TODO(Arun): run it on a machine with Docker, time it, and replace this
-  section with the result.
+  images were never built or started: the machine I built this on has Docker
+  Desktop installed, but it does not start ("Docker Desktop is unable to
+  start"), because the Windows Subsystem for Linux is not installed and I do
+  not have admin rights to install it. This is the first thing a reviewer
+  runs, so it is the largest unverified risk in the submission.
 
 ## Time spent
 
-TODO(Arun): your real numbers, roughly split.
+All in one day (20 November 2026), from 11:33 to about 17:05, with one
+break of about 25 minutes. The total comes from the session log; the split is
+my estimate, because building, testing and fixing were interleaved.
 
 | Activity | Time |
 |---|---|
-| Planning (reading the brief, choosing the stack, checking constraints) | |
-| Building (AI writing code, me directing) | |
-| Testing (automated tests, the browser runs) | |
-| Reviewing (the four-reviewer round, fixes, reading every file) | |
-| **Total** | |
+| Planning (reading the brief, choosing the stack, checking constraints) | about 15 min |
+| Building (AI writing code, me directing; includes the redesign, view switch, HTML email and light/dark switch) | about 2 h 45 min |
+| Testing (automated tests, browser runs, layout measurements, failure tests) | about 1 h 15 min |
+| Reviewing (independent review rounds and their fixes) | about 50 min |
+| **Total** | **about 5 h 5 min** |
+
+That is about twice the 2–3 hour time-box. Most of the extra went into the
+four additions listed in `DECISIONS.md` ("What the brief needed, and what I
+added"), which I would cut in a three-hour redo.

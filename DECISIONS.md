@@ -6,7 +6,7 @@
 |---|---|---|
 | "I have chosen 5 products to be top rated": who chooses, and how? | The business owner chooses. The five ids are stored in MongoDB and set with a command (`npm run featured:set`). | "Chosen" means curated, not computed. There is no login in the PoC, so an admin screen or endpoint would let anyone change the home page. |
 | What does the home page show before anything is chosen? | The five best rated products. Chosen ids the source no longer has are skipped (and logged), and the gap is filled the same way. If the choice cannot be read at all, the same fallback applies. | The home page should never be empty or broken because of missing setup, a changed catalogue or a database hiccup. |
-| "Top rated" means two things | On the home page it means **chosen by the owner**. On a category page it means **computed**: the top 3 by average rating, ties broken by number of ratings. The rest are the "additional products". | The home criterion says "I have chosen"; the category criterion does not. I considered "the chosen products that fall in this category" for category pages, but with 5 picks across 4 categories most categories would show 0 or 1. 3 is a constant (`CATEGORY_TOP_RATED_COUNT`); Fake Store categories hold 4 to 6 products. |
+| "Top rated" means two things | On the home page it means **chosen by the owner**. On a category page it means **computed**: the top 3 by average rating, ties broken by number of ratings. The rest are the "additional products". | The home criterion says "I have chosen"; the category criterion does not. I considered "the chosen products that fall in this category" for category pages, but with 5 picks across 4 categories most categories would show 0 or 1. 3 is a constant (`CATEGORY_TOP_RATED_COUNT`); Fake Store categories hold 4 to 6 products. I kept the brief's word "Top rated" as the home page heading, with "Our pick of the catalogue" above it, so the owner's choice is visible as a choice. The cost I accept: a chosen product can show a low rating (say 2.9 stars) under a "Top rated" heading. That is the owner's call, and it is what the criterion asks for. |
 | "Text matching that search term": which text, what kind of match? | Every word of the term must match the **start of a word** in the title, description or category name, ignoring case. "jack" finds "Jacket"; "men" does not find "women's". | Plain substring matching made "men" return all the women's clothing, which a customer would read as broken. |
 | Search with an empty term | The browser asks for a term (the field is required). `/search` with no term shows a hint. The API answers 400. | An empty search returning everything would contradict "only see products that match". |
 | "Submit an enquiry for products they want" (plural) | One product per enquiry, started from that product's page. | That is what the acceptance criterion describes. A basket of products is a bigger feature (a list that persists across pages) and is listed under "next". |
@@ -18,14 +18,33 @@
 | Does the customer get a confirmation email? | No, only the on-screen "Thank you". | Not in the criteria, and sending mail to an address nobody verified invites abuse. |
 | Personal data in enquiries | Name, email and phone are kept in MongoDB with no expiry, and are only ever sent to the sales inbox. | Fine for a PoC with no real customers. Before launch: a retention period, a privacy notice on the form, and a way to delete a person's data. |
 | No design was supplied: how should the pages be laid out? | In a window at least 1100 by 560 pixels, listing pages (home, category, search) are a fixed frame that fits one screen at 100% zoom: when there are more products than fit, the product area scrolls inside it, and that area can be reached and scrolled from the keyboard. Product and enquiry pages fill the screen and grow if the text needs it (they fit from about 600 pixels of height, so at the smallest framed size, 1100 by 560, they may scroll by a few dozen pixels). Smaller windows and phones scroll normally. The cost I accept: a scrolling area inside a page is less familiar than a scrolling page, and a search with hundreds of results renders them all in it (paging is the fix, listed below). | The creative agency will replace the look, so the layout's job is to stay usable with any amount of data. Checked with a 194-product, 24-category sample fed through the same adapter (see `AI_USAGE.md`). |
-| Light or dark? | Both. The site follows the visitor's system setting until they use the switch in the header; their choice is remembered in the browser (`catalogue-theme`) and put back before the first paint. | Two looks from one token file is the cheapest proof that the look is replaceable. Each colour is written once in `theme.css` as `light-dark(light, dark)`; an attribute on the page overrides the system setting. The cost: `light-dark()` needs browsers from 2024 onward. |
+| Light or dark? | Both. The site follows the visitor's system setting until they use the switch in the header; their choice is remembered in the browser (`catalogue-theme`) and put back before the first paint. | Two looks from one token file is the cheapest proof that the look is replaceable. Each colour is written once in `theme.css` as `light-dark(light, dark)`; an attribute on the page overrides the system setting. The cost: a browser without `light-dark()` gets only the light look, from a fallback block at the end of `theme.css` that repeats the light values (they must be kept in step). |
 | A search that finds nothing | The message, then every category as a link. | A dead end loses the customer; the categories are already known to the API. |
 | Where do categories come from? | Nowhere in our code. The list is whatever categories the products carry, read fresh with the catalogue. Categories are flat. | A new category in the source appears on its own. Fake Store sends one category word per product, so there is no hierarchy to show. |
 | JavaScript turned off | Not supported: pages stream their content, so without JavaScript only the loading state shows. | Not in the criteria; every target browser runs JavaScript. |
 | Malformed or hostile addresses | A malformed percent-encoded address (for example `/products/%E0%A4%A`) gets Next.js's own plain 500 page. | Found by failure testing. Only a hand-typed broken address reaches it, so it is left as is. |
-| The database is down | Catalogue pages still work; the home page takes about 5 seconds, then shows the best rated products; sending an enquiry fails with a friendly "try again". | Products come from the product source, not MongoDB. An enquiry cannot be saved without it, so it is not accepted. |
+| The database is down | Catalogue pages still work; the home page waits at most about a second for the owner's choice, then shows the best rated products; sending an enquiry fails with a friendly "try again". | Products come from the product source, not MongoDB. An enquiry cannot be saved without it, so it is not accepted. |
 
 ## 2. Dropped or simplified, and why
+
+### What the brief needed, and what I added
+
+The brief asks for five pages working end to end, on a structure that can
+grow. That is the backend with its three seams, the five pages, the enquiry
+email, the tests and these documents.
+
+On top of that I added four things nobody asked for:
+
+- the fit-one-screen frame on wide windows,
+- the large tiles / grid view switch,
+- the light/dark switch,
+- the HTML sales email with the product photo.
+
+Each has a reason (the layout must survive any amount of data; two looks
+prove the look is replaceable; a sales email should show what was asked
+about), but none is on the critical path. **Redoing this in three hours, I
+would cut all four** and keep a plain responsive grid, one look, and a
+plain-text email. They cost time and they add code a reviewer has to read.
 
 - **No admin screen for featured products.** A command instead. Needs login first.
 - **No login, accounts or roles.** Not in the criteria.
@@ -65,10 +84,13 @@
   heading says it once.
 - **Listing pages render every product they are given.** The inner scroll
   area copes with a couple of hundred; beyond that the API needs paging.
-- **No CI pipeline.** Would be the first thing added in a team setting.
-- **No tests against a real MongoDB.** The two Mongo classes are a few lines
-  each and were exercised in the manual and browser runs; automated tests use
-  in-memory fakes so they need no infrastructure.
+- **CI is minimal.** `.github/workflows/ci.yml` runs lint (web), type-check,
+  unit tests and build for both apps. It does not build the images or run the
+  browser tests yet (see "With another day").
+- **Tests against a real MongoDB run only when asked.** The two Mongo classes
+  have their own tests (`api/test/mongo.integration.test.ts`) that run when
+  `MONGODB_TEST_URI` is set, as it is in CI. Without it they are skipped, so
+  `npm test` still needs no infrastructure.
 
 ## 3. How the design supports growth beyond the PoC
 
@@ -91,11 +113,11 @@ fall back to best rated, with a warning in the log).
 
 **Email provider: `EmailSender` (one method, `send()`).**
 `SmtpEmailSender` covers Mailpit locally and an SMTP provider such as Amazon
-SES by settings (host, port, user, password; it upgrades to TLS when the
-server offers it). Two honest limits: the Docker run pins the host to the
-Mailpit container, so pointing it elsewhere means editing
-`docker-compose.yml`, and a provider that only accepts TLS from the first
-byte (port 465) needs one more option on the class. `ConsoleEmailSender` is
+SES by settings alone: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`,
+and `SMTP_SECURE` if the port needs forcing. Unset, port 465 uses TLS from
+the first byte and other ports upgrade to TLS when the server offers it.
+Docker Compose passes these through and defaults to its Mailpit container,
+so switching provider is an edit to `.env`, not to code. `ConsoleEmailSender` is
 the second implementation. A provider with its own API is one new class.
 
 **Look and feel: `web/src/app/theme.css`.**
@@ -121,10 +143,10 @@ Other choices that keep it changeable:
 
 - **The rules do not depend on the framework.** `CatalogueService` and
   `EnquiryService` take interfaces and know nothing about Express, MongoDB or
-  Fake Store. That is also why the tests run with no infrastructure. Two
-  shortcuts I would defend but not hide: the error classes carry their HTTP
-  status (`errors.ts`), and `EnquiryService` takes the concrete
-  `CatalogueService` to look a product up, not an interface.
+  Fake Store. That is also why the tests run with no infrastructure.
+  `EnquiryService` looks products up through a one-method `ProductLookup`,
+  which `CatalogueService` satisfies. One shortcut I would defend but not
+  hide: the error classes carry their HTTP status (`errors.ts`).
 - **One composition root** (`api/src/composition.ts`) decides what sits behind
   each interface.
 - **The client has one door** (`web/src/lib/api.ts`). It runs server-side, so
@@ -199,8 +221,9 @@ load balancer.
 
 1. **Retry failed enquiry emails**: a small worker over `emailStatus: failed`
    and stale `pending` records (a queue such as SQS in production).
-2. **CI**: lint, type-check, unit tests, build both images, start the stack
-   and run the browser tests on every pull request.
+2. **More CI**: lint, type-check, unit tests and build already run; next,
+   build both images, start the stack and run the browser tests on every
+   pull request.
 3. **One API contract**: describe the API in OpenAPI, generate the client
    types, delete the hand-written copy.
 4. **Push search and paging into `ProductSource`**, ahead of a real catalogue.

@@ -22,7 +22,8 @@ feel, and the email provider. Each has one seam. Protect the seams.
    (`config.ts`) passed in by `composition.ts`. Everything else uses `Product`
    from `api/src/domain/product.ts`, including the bundled snapshot.
 4. `CatalogueService` and `EnquiryService` depend on interfaces
-   (`ProductSource`, `FeaturedStore`, `EnquiryRepository`, `EmailSender`),
+   (`ProductSource`, `FeaturedStore`, `EnquiryRepository`, `EmailSender`,
+   `ProductLookup`),
    never on Express, MongoDB, nodemailer or `fetch`.
 5. Implementations are chosen in `api/src/composition.ts` and nowhere else.
 6. Colours, fonts, type sizes, letter spacing and spacing are tokens in
