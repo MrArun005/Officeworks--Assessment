@@ -141,11 +141,17 @@ test("layout: on a laptop screen every page fits without scrolling the page", as
 });
 
 test("layout: on a phone nothing is wider than the screen", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ["/", "/categories/electronics", "/search?q=jacket", "/products/3", "/products/3/enquire"]) {
-    await page.goto(path);
-    await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
-    expect((await pageOverflow(page)).across, path).toBe(0);
+  // A common phone, and a small 320px one.
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 320, height: 568 },
+  ]) {
+    await page.setViewportSize(size);
+    for (const path of ["/", "/categories/electronics", "/search?q=jacket", "/products/3", "/products/3/enquire"]) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 }).filter({ visible: true })).toBeVisible();
+      expect((await pageOverflow(page)).across, `${size.width}px ${path}`).toBe(0);
+    }
   }
 });
 

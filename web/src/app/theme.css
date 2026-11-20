@@ -10,6 +10,8 @@
  * Every colour is written once as light-dark(light value, dark value). Which
  * one shows follows the visitor's system setting, until they pick a look
  * with the switch in the header (lib/theme.ts sets data-theme on <html>).
+ * Browsers too old for light-dark() get the light values from the block at
+ * the end of this file.
  *
  * Breakpoints cannot be tokens (CSS does not allow variables in media
  * queries). globals.css uses three, each explained where it first appears:
@@ -91,6 +93,9 @@
   /* Search box in the header. */
   --search-min: 18rem;
   --search-max: 22rem;
+  /* The text box inside it: never narrower, so a phone still shows the
+     whole placeholder. */
+  --search-input-min: 9rem;
   /* Product page: shortest photo, widest text column. */
   --media-min: 20rem;
   --measure: 34rem;
@@ -103,4 +108,35 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+}
+
+/*
+ * Browsers without light-dark() get the light look. A second, plain declaration inside :root would not do
+ * it: a custom property takes any value, so the light-dark() line is kept
+ * and only fails later where var() uses it, leaving those colours unset.
+ * Hence this block, which only those browsers apply. It comes last so it
+ * also beats the switch's color-scheme above. The light values here must
+ * match the first value of each light-dark() in :root.
+ */
+@supports not (color: light-dark(#000, #fff)) {
+  :root,
+  :root[data-theme] {
+    color-scheme: light;
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-image-bg: #f3f3f1;
+    --color-placeholder: #e4e4e0;
+    --color-text: #0b0b0c;
+    --color-text-muted: #66666c;
+    --color-border: #e6e6e3;
+    --color-input-border: #8c8c90;
+    --color-accent: #0b0b0c;
+    --color-accent-hover: #34343a;
+    --color-on-accent: #ffffff;
+    --color-rating: #9a5800;
+    --color-danger: #b3261e;
+    --color-danger-bg: #fdeceb;
+    --color-success: #136c45;
+    --color-success-bg: #e9f5ee;
+  }
 }

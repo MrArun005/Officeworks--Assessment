@@ -244,13 +244,16 @@ a {
   gap: var(--space-2);
 }
 
+/* The box never gets narrower than a usable width (see the 900px rule). */
 .search input {
   flex: 1;
-  min-width: 0;
+  width: var(--search-input-min);
+  min-width: var(--search-input-min);
 }
 
-/* Light or dark. Both icons sit on top of each other; the one that does not
-   belong to the current look is transparent. */
+/* Light or dark. Last in the header: after the search on wide screens, at the
+   right end of the categories row up to 900px. Both icons sit on top of each
+   other; the one that does not belong to the current look is transparent. */
 .theme-toggle {
   flex: none;
   display: grid;
@@ -273,11 +276,15 @@ a {
   grid-area: 1 / 1;
 }
 
+/* The first line is for browsers without light-dark(): they drop the second
+   and show the light look's icon (theme.css gives them the light colours). */
 .theme-toggle__moon {
+  fill: currentColor;
   fill: light-dark(currentColor, transparent);
 }
 
 .theme-toggle__sun {
+  fill: transparent;
   fill: light-dark(transparent, currentColor);
 }
 
@@ -290,14 +297,21 @@ a {
   }
 }
 
-/* Up to 900px: the categories get their own row under brand and search. */
+/*
+ * Up to 900px the header wraps:
+ *   first row   brand, then the search box taking the rest of the row;
+ *   last row    the categories, with the light/dark switch at the right end.
+ * The search never squeezes below its usable width: where the brand leaves
+ * too little room (small phones, about 400px and down), it takes a full row
+ * of its own between the two. One rule, no phone breakpoint: the row simply
+ * wraps when the box's minimum no longer fits.
+ */
 @media (max-width: 900px) {
   .header__inner {
     flex-wrap: wrap;
     column-gap: var(--space-3);
   }
 
-  /* Second row: the categories, with the light/dark switch at its end. */
   .header__nav {
     order: 3;
     /* A full row less the switch, so it always starts a new row. */
@@ -309,10 +323,11 @@ a {
     margin-left: auto;
   }
 
-  /* Beside the brand, taking whatever width is left, down to a small phone. */
+  /* Takes whatever width is left; its smallest size is the box's minimum
+     plus the button, which decides when it wraps to its own row. */
   .search {
     flex: 1 1 0;
-    min-width: 8rem;
+    min-width: auto;
     max-width: none;
   }
 }
@@ -428,6 +443,14 @@ textarea[aria-invalid="true"] {
   container-type: inline-size;
 }
 
+/* Card text may shrink with its card; long words wrap rather than widen it. */
+.card__category,
+.card__title,
+.card__meta {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .card--skeleton {
   min-height: var(--row-min);
   background: var(--color-placeholder);
@@ -489,14 +512,17 @@ a.card:hover .card__title {
   overflow: hidden;
 }
 
-/* Price and rating share the bottom line of every card in a row. */
+/* Price and rating share the bottom line of every card in a row. When a card
+   is too narrow for both, the rating moves under the price instead of
+   pushing the card wider. */
 .card__meta {
   margin-top: auto;
   padding-top: var(--space-2);
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: 0 var(--space-3);
 }
 
 .card__price {
@@ -509,13 +535,15 @@ a.card:hover .card__title {
      stretching the page from inside a scrolling list. */
   position: relative;
   margin: 0;
+  min-width: 0;
   font-size: var(--text-sm);
   color: var(--color-rating);
-  white-space: nowrap;
 }
 
+/* If even a line of its own is too narrow, the count wraps as one piece. */
 .rating__count {
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 /* A card narrower than 15rem shows the score alone, so a long price never
