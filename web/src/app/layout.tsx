@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Header } from "@/components/Header";
-import { VIEW_SCRIPT } from "@/lib/view";
+import { HEAD_SCRIPT } from "@/lib/headScript";
 import "./theme.css";
 import "./globals.css";
 
@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    // The script below may set data-view before React wakes up, hence
+    // The script below may set data-view and data-theme before React wakes up, hence
     // suppressHydrationWarning (bundled guide: preventing-flash-before-hydration).
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: VIEW_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
       </head>
       <body>
         <Header />

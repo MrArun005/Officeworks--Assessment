@@ -69,7 +69,8 @@ services:
   mailpit:
     image: axllent/mailpit:v1.34.0
     ports:
-      - "${MAILPIT_UI_PORT:-8025}:8025"
+      # This machine only: the inbox shows customers' names and emails.
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
 
 volumes:
   mongo-data:

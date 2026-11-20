@@ -4,9 +4,12 @@
  * typeface from the creative work is an edit to this file. A new layout (say,
  * a different product card) also touches globals.css and the component itself.
  *
- * Two looks, chosen by the visitor's system setting:
+ * Two looks:
  *   light: white and minimal, black as the only accent.
  *   dark:  black and sharp, one bright accent.
+ * Every colour is written once as light-dark(light value, dark value). Which
+ * one shows follows the visitor's system setting, until they pick a look
+ * with the switch in the header (lib/theme.ts sets data-theme on <html>).
  *
  * Breakpoints cannot be tokens (CSS does not allow variables in media
  * queries). globals.css uses three, each explained where it first appears:
@@ -17,24 +20,25 @@
 :root {
   color-scheme: light dark;
 
-  --color-bg: #ffffff;
-  --color-surface: #ffffff;
-  /* The tile behind product photos. */
-  --color-image-bg: #f3f3f1;
+  --color-bg: light-dark(#ffffff, #050505);
+  --color-surface: light-dark(#ffffff, #111113);
+  /* The tile behind product photos. Light in both looks: the photos have
+     white backgrounds. */
+  --color-image-bg: light-dark(#f3f3f1, #f1f1ef);
   /* A loading tile; darker than the photo tile so it shows on the page. */
-  --color-placeholder: #e4e4e0;
-  --color-text: #0b0b0c;
-  --color-text-muted: #66666c;
-  --color-border: #e6e6e3;
-  --color-input-border: #8c8c90;
-  --color-accent: #0b0b0c;
-  --color-accent-hover: #34343a;
-  --color-on-accent: #ffffff;
-  --color-rating: #9a5800;
-  --color-danger: #b3261e;
-  --color-danger-bg: #fdeceb;
-  --color-success: #136c45;
-  --color-success-bg: #e9f5ee;
+  --color-placeholder: light-dark(#e4e4e0, #222226);
+  --color-text: light-dark(#0b0b0c, #f5f5f4);
+  --color-text-muted: light-dark(#66666c, #9c9ca3);
+  --color-border: light-dark(#e6e6e3, #26262a);
+  --color-input-border: light-dark(#8c8c90, #6e6e76);
+  --color-accent: light-dark(#0b0b0c, #c8f542);
+  --color-accent-hover: light-dark(#34343a, #dcff70);
+  --color-on-accent: light-dark(#ffffff, #0a0a0a);
+  --color-rating: light-dark(#9a5800, #f5c542);
+  --color-danger: light-dark(#b3261e, #ff8f8a);
+  --color-danger-bg: light-dark(#fdeceb, #2c1414);
+  --color-success: light-dark(#136c45, #7be0a8);
+  --color-success-bg: light-dark(#e9f5ee, #10261b);
 
   --font-body:
     "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
@@ -92,24 +96,11 @@
   --measure: 34rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #050505;
-    --color-surface: #111113;
-    /* Product photos have white backgrounds; keep their tile light. */
-    --color-image-bg: #f1f1ef;
-    --color-placeholder: #222226;
-    --color-text: #f5f5f4;
-    --color-text-muted: #9c9ca3;
-    --color-border: #26262a;
-    --color-input-border: #6e6e76;
-    --color-accent: #c8f542;
-    --color-accent-hover: #dcff70;
-    --color-on-accent: #0a0a0a;
-    --color-rating: #f5c542;
-    --color-danger: #ff8f8a;
-    --color-danger-bg: #2c1414;
-    --color-success: #7be0a8;
-    --color-success-bg: #10261b;
-  }
+/* The visitor's own choice wins over the system setting. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { VIEW_ATTRIBUTE as ATTRIBUTE, VIEW_KEY as STORAGE_KEY } from "./headScript";
 
 /**
  * How product lists are shown on a wide screen:
@@ -9,19 +10,10 @@ import { useSyncExternalStore } from "react";
  *
  * The choice is a visitor's preference, not catalogue data, so it never goes
  * to the API. It lives in an attribute on <html> (the CSS in globals.css
- * does the rest) and is remembered in the browser.
+ * does the rest) and is remembered in the browser; lib/headScript.ts puts it
+ * back before the first paint.
  */
 export type View = "large" | "grid";
-
-const STORAGE_KEY = "catalogue-view";
-const ATTRIBUTE = "data-view";
-
-/**
- * Runs in <head> before anything is painted, so a returning visitor never
- * sees the default view flash first. Pattern from the bundled Next.js guide:
- * guides/preventing-flash-before-hydration.md ("Themes").
- */
-export const VIEW_SCRIPT = `(function(){try{if(localStorage.getItem("${STORAGE_KEY}")==="grid")document.documentElement.setAttribute("${ATTRIBUTE}","grid")}catch(e){}})()`;
 
 const listeners = new Set<() => void>();
 

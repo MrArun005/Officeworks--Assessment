@@ -249,6 +249,38 @@ a {
   min-width: 0;
 }
 
+/* Light or dark. Both icons sit on top of each other; the one that does not
+   belong to the current look is transparent. */
+.theme-toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--space-5);
+  height: var(--space-5);
+  padding: 0;
+  color: var(--color-text-muted);
+  background: none;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+}
+
+.theme-toggle svg {
+  grid-area: 1 / 1;
+}
+
+.theme-toggle__moon {
+  fill: light-dark(currentColor, transparent);
+}
+
+.theme-toggle__sun {
+  fill: light-dark(transparent, currentColor);
+}
+
 /* Wider than 900px: the header stays in view while the page scrolls. */
 @media (min-width: 901px) {
   .header {
@@ -265,9 +297,16 @@ a {
     column-gap: var(--space-3);
   }
 
+  /* Second row: the categories, with the light/dark switch at its end. */
   .header__nav {
     order: 3;
-    flex-basis: 100%;
+    /* A full row less the switch, so it always starts a new row. */
+    flex: 1 1 calc(100% - var(--space-5) - var(--space-3));
+  }
+
+  .theme-toggle {
+    order: 4;
+    margin-left: auto;
   }
 
   /* Beside the brand, taking whatever width is left, down to a small phone. */
@@ -408,6 +447,9 @@ textarea[aria-invalid="true"] {
   display: block;
   aspect-ratio: 1;
   overflow: hidden;
+  /* No `isolation` here. With the blended photo and the badge above it, an
+     isolated tile was drawn one scroll step late (measured in recorded
+     frames), so badged tiles slid against the rest of their row. */
   background: var(--color-image-bg);
   border-radius: var(--radius);
   margin-bottom: var(--space-2);
@@ -423,23 +465,16 @@ textarea[aria-invalid="true"] {
   object-fit: contain;
   /* Lets a photo's white background take the colour of its tile. */
   mix-blend-mode: multiply;
-  transition: transform 0.35s ease;
 }
 
-a.card:hover .card__image {
-  transform: scale(1.05);
-}
-
+/* The only hover cue is the underline. Photos do not zoom: while a list
+   scrolls under the pointer, a zoom makes every passing tile twitch. */
 a.card:hover .card__title {
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card__image {
-    transition: none;
-  }
-
   .card--skeleton {
     animation: none;
   }
@@ -638,6 +673,9 @@ a.card:hover .card__title {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    /* A list keeps its own scroll: reaching its end never drags or bounces
+       the page around it. Same rule on every scrolling area. */
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     /* Room for focus rings, at rest and when a card is scrolled into view. */
     padding: var(--space-2);
@@ -798,6 +836,7 @@ a.card:hover .card__title {
    */
   :root[data-view="grid"] .category__body {
     overflow-y: auto;
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     container-type: size;
     padding: var(--space-2);

@@ -149,6 +149,27 @@ test("layout: on a phone nothing is wider than the screen", async ({ page }) => 
   }
 });
 
+test("light and dark: the switch flips the look, and the choice is remembered", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  const background = () =>
+    page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const light = await background();
+
+  await page.getByRole("button", { name: "Switch between light and dark" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const dark = await background();
+  expect(dark).not.toBe(light);
+
+  // Still dark after a reload, although the system setting says light.
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await background()).toBe(dark);
+
+  await page.getByRole("button", { name: "Switch between light and dark" }).click();
+  expect(await background()).toBe(light);
+});
+
 test("view switch: grid view shows four across and two rows to a screen, and is remembered", async ({
   page,
 }) => {

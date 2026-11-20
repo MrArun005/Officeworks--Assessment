@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getCategories } from "@/lib/api";
 import { formatCategoryName } from "@/lib/format";
 import { CategoryLink } from "./CategoryLink";
+import { ThemeToggle } from "./ThemeToggle";
 
 async function CategoryLinks() {
   let categories;
@@ -60,6 +61,7 @@ export function Header() {
             Search
           </button>
         </Form>
+        <ThemeToggle />
       </div>
     </header>
   );
