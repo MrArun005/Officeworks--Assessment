@@ -139,6 +139,15 @@ code, in this order:
     with shared in-flight requests, time limits on every outside call, rate
     limiting, streaming with placeholders, lazy images).
 
+13. **A failure and hostile-input pass.** The AI tried to break the running
+    app instead of confirming it worked: 51 HTTP checks plus browser checks
+    (including console errors, blocked resources and phone widths). What it
+    found and left as is is listed
+    in `DECISIONS.md`: unknown pages answer 200 with a not-found page, a
+    malformed percent-encoded address gets Next.js's plain 500, and with the
+    database down the home page is slow and enquiries ask to try again. The
+    same pass added security headers to the web pages.
+
 ## Where the AI got something wrong, and how it was caught
 
 1. **Rate limiting: wrong twice.** The first version limited enquiries per IP
@@ -254,12 +263,20 @@ code, in this order:
     is a single grid with a "Top rated" badge, and a browser test that every
     tile on the page is the same size.
 
+13. **Joining two head scripts broke the pre-paint script.** Adding the
+    light/dark switch, the AI merged the view and theme scripts into one.
+    One of the strings it used was exported from a `"use client"` file, so
+    on the server it arrived as a client reference, not as text, and the
+    script that sets the look before the first paint broke. Caught by the
+    console-error check in the browser run. Fixed by moving the script and
+    its keys to `web/src/lib/headScript.ts`, which has no `"use client"`.
+
 ## What was not verified
 
 - `docker compose up --build` itself. Both compose files pass
   `docker compose config`, the images' Alpine native packages were checked in
   the lockfiles, and the same built code (including the web standalone
-  server the image runs) passed all 11 browser tests outside Docker. But the
+  server the image runs) passed all 12 browser tests outside Docker. But the
   images were never built or started.
   TODO(Arun): run it on a machine with Docker, time it, and replace this
   section with the result.

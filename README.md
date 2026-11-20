@@ -43,14 +43,14 @@ depending on your connection. Then open:
 | What | Where |
 |---|---|
 | The catalogue | http://localhost:3000 |
-| The sales inbox (Mailpit) | http://localhost:8025 |
+| The sales inbox (Mailpit, this machine only) | http://localhost:8025 |
 | The API (this machine only) | http://localhost:4000/api/health |
 
 Submit an enquiry from any product page, then open the sales inbox to see the
 email arrive.
 
-The look follows your system's light or dark setting (there is no switch in
-the app). On a laptop or monitor (a window at least 1100 by 560 pixels)
+The look follows your system's light or dark setting until you choose one
+with the switch in the header; the choice is remembered in the browser. On a laptop or monitor (a window at least 1100 by 560 pixels)
 the home, category and search pages fit one screen at 100% zoom, with long
 product lists scrolling inside the page. Product and enquiry pages fit from
 about 600 pixels of height. Smaller windows and phones scroll normally.
@@ -85,7 +85,7 @@ for bash (Git Bash on Windows).
 
 ```bash
 (cd api && npm ci && npm test)   # 77 tests: rules, sources, cache, email, HTTP
-(cd web && npm ci && npm test)   # 24 tests: API client, product grid, view switch, enquiry form, server action
+(cd web && npm ci && npm test)   # 26 tests: API client, product grid, view switch, light/dark switch, enquiry form, server action
 ```
 
 Neither needs Docker, a database, a mail server or the network: the edges are
@@ -93,11 +93,12 @@ replaced with in-memory fakes.
 
 **Browser tests** walk the five acceptance criteria against the running stack,
 including reading the email from the sales inbox, and check the two layout
-promises (fits a laptop screen; nothing wider than a phone):
+promises (fits a laptop screen; nothing wider than a phone) and the light/dark
+switch:
 
 ```bash
 docker compose up --build -d
-(cd e2e && npm ci && npm run install-browser && npm test)   # 11 tests
+(cd e2e && npm ci && npm run install-browser && npm test)   # 12 tests
 ```
 
 Already have Chrome or Edge? Skip the download with
@@ -147,7 +148,11 @@ web/src/
   app/globals.css              layout and components, built only from those tokens
   app/                         pages: home, category, search, product, enquire
   components/                  header, product grid (four layouts), view switch, enquiry form
+  components/ThemeToggle.tsx   the light/dark switch in the header
   lib/view.ts                  the visitor's chosen view (large tiles or grid)
+  lib/theme.ts                 the visitor's chosen look (light or dark)
+  lib/headScript.ts            puts both choices back before the first paint
+web/next.config.ts             security headers sent with every page
 e2e/tests/                     the acceptance criteria in a real browser
 ```
 
