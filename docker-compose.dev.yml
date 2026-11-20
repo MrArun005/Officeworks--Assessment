@@ -1,0 +1,11 @@
+# Only for developing outside Docker: publishes MongoDB and SMTP on
+# 127.0.0.1 so `npm run dev` in api/ can reach them.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mongo mailpit
+services:
+  mongo:
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27017}:27017"
+  mailpit:
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"

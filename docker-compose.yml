@@ -1,0 +1,75 @@
+# One command runs everything: `docker compose up --build`.
+# Every value has a working default; copy .env.example to .env to override.
+#
+# Only the two pages a person opens are published on your machine: the
+# catalogue (3000) and the sales inbox (8025). The API is published on
+# 127.0.0.1 for curl and debugging. MongoDB and SMTP stay on the internal
+# network, so a local mongod or mail server cannot clash with this stack.
+services:
+  web:
+    build: ./web
+    environment:
+      # Server-side only: the browser never talks to the API directly.
+      API_BASE_URL: http://api:4000
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: on-failure
+
+  api:
+    build: ./api
+    environment:
+      PORT: 4000
+      PRODUCT_SOURCE: ${PRODUCT_SOURCE:-fakestore}
+      FAKESTORE_BASE_URL: ${FAKESTORE_BASE_URL:-https://fakestoreapi.com}
+      PRODUCT_CACHE_TTL_SECONDS: ${PRODUCT_CACHE_TTL_SECONDS:-300}
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: ${MONGODB_DB:-catalogue}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
+      # Fixed to the Mailpit container: a host-side SMTP_HOST in .env (used
+      # when running the API outside Docker) must not leak in here.
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      MAIL_FROM: ${MAIL_FROM:-catalogue@example.test}
+      SALES_INBOX: ${SALES_INBOX:-sales@example.test}
+      # For the "View product" link in the sales email. Change it together
+      # with WEB_PORT.
+      PUBLIC_WEB_URL: ${PUBLIC_WEB_URL:-http://localhost:3000}
+    ports:
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: on-failure
+    healthcheck:
+      # /api/health also pings MongoDB.
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+
+  mongo:
+    image: mongo:7.0
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # A local inbox that catches every email. Open http://localhost:8025 to read
+  # what the "sales inbox" received. Stands in for a real provider.
+  mailpit:
+    image: axllent/mailpit:v1.34.0
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+
+volumes:
+  mongo-data:
