@@ -181,17 +181,47 @@ code, in this order:
 - Customer-facing validation messages showed library jargon, and the
   featured-products command crashed on Windows (caught by the AI itself).
 
-## What was not verified
+## Docker: verified by an independent review, not on my machine
 
-- `docker compose up --build` itself. Both compose files pass
-  `docker compose config`, the images' Alpine native packages were checked in
-  the lockfiles, and the same built code (including the web standalone
-  server the image runs) passed all 12 browser tests outside Docker. But the
-  images were never built or started: the machine I built this on has Docker
-  Desktop installed, but it does not start ("Docker Desktop is unable to
-  start"), because the Windows Subsystem for Linux is not installed and I do
-  not have admin rights to install it. This is the first thing a reviewer
-  runs, so it is the largest unverified risk in the submission.
+Docker does not start on the machine I built this on (Docker Desktop needs
+the Windows Subsystem for Linux, which I have no admin rights to install).
+So I asked an independent reviewer, a separate Claude Code session in a
+Linux cloud container given only the brief and the repository, to run the
+README as a new reviewer would. Results, on commit `549c28b`:
+
+- `docker compose up --build`: all four containers healthy (web, api,
+  mongo, mailpit) in about 40 seconds once the base images were downloaded.
+  The API and the Mailpit inbox were published on 127.0.0.1 only.
+- Browser tests against that stack: 12/12 passed, including the email
+  arriving in Mailpit and the 320px phone check.
+- `docker compose exec api npm run featured:set -- 9 13 1 5 17`: the home
+  page showed those five, in that order. A wrong number of ids was refused.
+- MongoDB integration tests against the stack's database: 3/3 passed.
+- Failure checks in Docker: with MongoDB stopped, the home page fell back to
+  best rated in about 1 second; with Mailpit stopped, the customer still saw
+  "Thank you" and the enquiry was recorded as failed; with Fake Store
+  unreachable, the bundled snapshot was served; invalid settings stopped the
+  API at startup with every problem listed.
+- SMTP settings in `.env` reached the API container; with no `.env` it used
+  Mailpit.
+
+Two things in that run were specific to the reviewer's cloud container, not
+to the project: Docker Hub rate-limited image pulls, and the container's
+network proxy re-signs TLS, so `npm ci` inside the image build needed the
+proxy's certificate added. The project files were not changed.
+
+## What is still not verified
+
+- The first-run time on a normal machine with nothing cached (image
+  downloads included). The README's "a few minutes" is an estimate.
+- Running on Windows or macOS with Docker Desktop.
+- The light-only fallback in a browser older than `light-dark()`.
+- Anything on AWS: the AWS mapping in `DECISIONS.md` is a design, not a
+  deployment.
+
+The CI workflow has run on GitHub: lint, type-check, unit tests and build
+passed for both apps, with the MongoDB tests running against a service
+container.
 
 ## Time spent
 
