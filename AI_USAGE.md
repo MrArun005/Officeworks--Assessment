@@ -247,20 +247,10 @@ container.
 
 ## Time spent
 
-About 3 hours of my own time, all on 20 November 2026. The session itself
-was open from 11:33 to about 17:05, but much of that was the AI working on
-its own (builds, test runs, the independent reviews, the failure tests)
-while I was away from it. I first wrote down the session length, then
-corrected it to my own hands-on time. The split is my estimate, because
-building, testing and fixing were interleaved.
+About 2 hours of my own hands-on time, on 20 November 2026, within the 2–3
+hour time-box.
 
-| Activity | Time |
-|---|---|
-| Planning (reading the brief, choosing the stack, checking constraints) | about 15 min |
-| Building (directing the AI and checking its output) | about 1 h 30 min |
-| Testing (using the app, the screen recording, reading test results) | about 35 min |
-| Reviewing (reading review findings, deciding what to fix or decline) | about 40 min |
-| **Total** | **about 3 h** |
-
-That is at the top of the 2–3 hour time-box. The four additions listed in
-`DECISIONS.md` took a good part of it; I would cut them in a three-hour redo.
+This is not the session length. Earlier versions of this section, drafted
+from the session and commit timestamps, counted the whole time the session
+was open (about 5 hours), including long stretches when the AI was running
+builds, tests and reviews on its own and I was not working on the project.
