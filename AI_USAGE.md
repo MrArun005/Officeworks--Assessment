@@ -225,18 +225,21 @@ container.
 
 ## Time spent
 
-All in one day (20 November 2026), from 11:33 to about 17:05, with one
-break of about 25 minutes. The total comes from the session log; the split is
-my estimate, because building, testing and fixing were interleaved.
+About 3.5 hours of my own time, all on 20 November 2026. The session itself
+was open from 11:33 to about 17:05, but much of that was the AI working on
+its own (builds, test runs, the independent reviews, the failure tests)
+while I was away from it, so the session length is not my working time.
+The split is my estimate, because building, testing and fixing were
+interleaved.
 
 | Activity | Time |
 |---|---|
 | Planning (reading the brief, choosing the stack, checking constraints) | about 15 min |
-| Building (AI writing code, me directing; includes the redesign, view switch, HTML email and light/dark switch) | about 2 h 45 min |
-| Testing (automated tests, browser runs, layout measurements, failure tests) | about 1 h 15 min |
-| Reviewing (independent review rounds and their fixes) | about 50 min |
-| **Total** | **about 5 h 5 min** |
+| Building (directing the AI and checking its output; includes the redesign, view switch, HTML email and light/dark switch) | about 1 h 45 min |
+| Testing (using the app, the screen recording, reading test results) | about 45 min |
+| Reviewing (reading review findings, deciding what to fix or decline, the documents) | about 45 min |
+| **Total** | **about 3 h 30 min** |
 
-That is about twice the 2–3 hour time-box. Most of the extra went into the
-four additions listed in `DECISIONS.md` ("What the brief needed, and what I
-added"), which I would cut in a three-hour redo.
+That is over the 2–3 hour time-box. The extra went into the four additions
+listed in `DECISIONS.md` ("What the brief needed, and what I added"), which
+I would cut in a three-hour redo.
