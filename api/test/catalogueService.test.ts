@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CatalogueService } from "../src/catalogue/catalogueService.js";
 import { NotFoundError } from "../src/errors.js";
 import { InMemoryFeaturedStore } from "../src/featured/featuredStore.js";
@@ -65,6 +65,45 @@ describe("featured products (home page)", () => {
     };
     const catalogue = new CatalogueService(new StubProductSource(defaultProducts), brokenStore, silent);
     expect(ids(await catalogue.getFeatured())).toEqual(["5", "6", "4", "7", "3"]);
+  });
+
+  it("shows the best rated quickly when the choice never arrives", async () => {
+    const hangingStore = {
+      getIds: () => new Promise<string[]>(() => {}),
+      setIds: async () => {},
+    };
+    const warnings: string[] = [];
+    const catalogue = new CatalogueService(
+      new StubProductSource(defaultProducts),
+      hangingStore,
+      { warn: (message) => void warnings.push(message) },
+      { featuredTimeoutMs: 50 },
+    );
+    const started = Date.now();
+    expect(ids(await catalogue.getFeatured())).toEqual(["5", "6", "4", "7", "3"]);
+    expect(Date.now() - started).toBeLessThan(1500);
+    expect(warnings).toEqual(["Could not read the featured products; showing best rated"]);
+  });
+
+  it("waits about a second for the choice by default", async () => {
+    vi.useFakeTimers();
+    try {
+      const hangingStore = {
+        getIds: () => new Promise<string[]>(() => {}),
+        setIds: async () => {},
+      };
+      const catalogue = new CatalogueService(new StubProductSource(defaultProducts), hangingStore, silent);
+      let featured: { id: string }[] | undefined;
+      const pending = catalogue.getFeatured().then((result) => (featured = result));
+
+      await vi.advanceTimersByTimeAsync(999);
+      expect(featured).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(ids(featured ?? [])).toEqual(["5", "6", "4", "7", "3"]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("does not show the same product twice if the source repeats an id", async () => {
@@ -146,6 +185,16 @@ describe("search", () => {
     ];
     expect(ids(await service(clothes).search("men"))).toEqual(["m"]);
     expect(ids(await service(clothes).search("men's"))).toEqual(["m"]);
+  });
+
+  it("treats a curly apostrophe the same as a straight one", async () => {
+    const clothes = [
+      product("curly", { title: "Men’s Rain Jacket" }),
+      product("straight", { title: "Men's Wool Coat" }),
+    ];
+    expect(ids(await service(clothes).search("men's rain"))).toEqual(["curly"]);
+    expect(ids(await service(clothes).search("men’s wool"))).toEqual(["straight"]);
+    expect(ids(await service(clothes).search("men‘s"))).toEqual(["curly", "straight"]);
   });
 
   it("treats regular-expression characters in the term as plain text", async () => {

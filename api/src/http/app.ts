@@ -22,7 +22,11 @@ export interface AppDependencies {
 }
 
 const searchQuerySchema = z.object({
-  search: z.string("Enter a search term").trim().min(1, "Enter a search term").max(100),
+  search: z
+    .string("Enter a search term")
+    .trim()
+    .min(1, "Enter a search term")
+    .max(100, "Search terms are limited to 100 characters"),
 });
 
 function parse<T>(schema: z.ZodType<T>, value: unknown, what: string): T {
@@ -90,6 +94,10 @@ export function createApp(deps: AppDependencies): Express {
     limit: deps.enquiryRateLimit ?? 20,
     standardHeaders: "draft-8",
     legacyHeaders: false,
+    // Only enquiries that were accepted count. A customer fixing a typo in
+    // their email address must not be locked out; the limit is there to stop
+    // floods of saved enquiries and emails to sales, and a 400 sends neither.
+    skipFailedRequests: true,
     handler: (_req, res) => {
       res.status(429).json({
         error: { code: "rate_limited", message: "Too many enquiries, try again later" },

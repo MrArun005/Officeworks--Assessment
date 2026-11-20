@@ -107,6 +107,18 @@ describe("search", () => {
     const res = await request(app).get("/api/products").query({ search: "   " }).expect(400);
     expect(res.body.error.code).toBe("validation_failed");
   });
+
+  it("explains that a search term over 100 characters is too long", async () => {
+    const res = await request(app)
+      .get("/api/products")
+      .query({ search: "a".repeat(101) })
+      .expect(400);
+    // A field error, so it is in details; the top-level message stays general.
+    expect(res.body.error.message).toBe("Invalid search query");
+    expect(res.body.error.details).toEqual({
+      search: ["Search terms are limited to 100 characters"],
+    });
+  });
 });
 
 describe("product page", () => {
@@ -236,6 +248,16 @@ describe("enquiry", () => {
     expect(limited.body.error.code).toBe("rate_limited");
 
     await send("203.0.113.99").expect(201);
+  });
+
+  it("does not count rejected enquiries towards the limit", async () => {
+    const send = (body: object) =>
+      request(app).post("/api/enquiries").set("X-Forwarded-For", "203.0.113.7").send(body);
+
+    for (let i = 0; i < 5; i++) {
+      await send({ ...validEnquiry, email: "not-an-email" }).expect(400);
+    }
+    await send(validEnquiry).expect(201);
   });
 });
 

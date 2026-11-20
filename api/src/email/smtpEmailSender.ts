@@ -4,6 +4,11 @@ import type { EmailMessage, EmailSender } from "./emailSender.js";
 export interface SmtpOptions {
   host: string;
   port: number;
+  /**
+   * TLS from the first byte when true; STARTTLS upgrade (when offered) when
+   * false. Left undefined, nodemailer decides by port: 465 means TLS.
+   */
+  secure?: boolean;
   user?: string;
   pass?: string;
 }
@@ -19,6 +24,7 @@ export class SmtpEmailSender implements EmailSender {
     this.transporter = nodemailer.createTransport({
       host: options.host,
       port: options.port,
+      secure: options.secure,
       auth:
         options.user && options.pass
           ? { user: options.user, pass: options.pass }

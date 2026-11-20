@@ -17,6 +17,18 @@ const envSchema = z.object({
   EMAIL_PROVIDER: withDefault(z.enum(["smtp", "console"]).default("smtp")),
   SMTP_HOST: withDefault(z.string().min(1).default("localhost")),
   SMTP_PORT: withDefault(z.coerce.number().int().positive().default(1025)),
+  /**
+   * Usually left unset: nodemailer then uses TLS from the first byte on port
+   * 465 and upgrades with STARTTLS elsewhere (587, Mailpit). "true" or
+   * "false" overrides that. Only those two: z.coerce.boolean() would read
+   * "false" as true.
+   */
+  SMTP_SECURE: withDefault(
+    z
+      .enum(["true", "false"])
+      .transform((value) => value === "true")
+      .optional(),
+  ),
   SMTP_USER: withDefault(z.string().optional()),
   SMTP_PASS: withDefault(z.string().optional()),
   MAIL_FROM: withDefault(z.email().default("catalogue@example.test")),

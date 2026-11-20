@@ -7,23 +7,15 @@
  * unauthenticated "change the home page" endpoint would be a security hole.
  */
 import { MongoClient } from "mongodb";
-import { FEATURED_COUNT } from "../catalogue/catalogueService.js";
 import { buildProductSource } from "../composition.js";
 import { loadConfig } from "../config.js";
 import { MongoFeaturedStore } from "../featured/mongoFeaturedStore.js";
+import { validateFeaturedIds } from "../featured/validateFeaturedIds.js";
 
 async function main(): Promise<void> {
-  const ids = process.argv.slice(2);
-  if (ids.length !== FEATURED_COUNT || new Set(ids).size !== ids.length) {
-    throw new Error(`Give exactly ${FEATURED_COUNT} different product ids`);
-  }
-
   const config = loadConfig();
   const products = await buildProductSource(config).getAll();
-  const unknown = ids.filter((id) => !products.some((p) => p.id === id));
-  if (unknown.length > 0) {
-    throw new Error(`Unknown product ids: ${unknown.join(", ")}`);
-  }
+  const ids = validateFeaturedIds(process.argv.slice(2), products);
 
   const mongo = new MongoClient(config.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   try {

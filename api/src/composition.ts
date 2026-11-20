@@ -49,6 +49,7 @@ export function buildEmailSender(config: Config): EmailSender {
     : new SmtpEmailSender({
         host: config.SMTP_HOST,
         port: config.SMTP_PORT,
+        secure: config.SMTP_SECURE,
         user: config.SMTP_USER,
         pass: config.SMTP_PASS,
       });

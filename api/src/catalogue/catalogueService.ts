@@ -1,10 +1,22 @@
 import { byRatingDesc, type Category, type Product } from "../domain/product.js";
 import { NotFoundError } from "../errors.js";
 import type { FeaturedStore } from "../featured/featuredStore.js";
+import { withTimeout } from "../timeout.js";
 import type { ProductSource } from "./productSource.js";
 
 export const FEATURED_COUNT = 5;
 export const CATEGORY_TOP_RATED_COUNT = 3;
+
+/**
+ * How long the home page waits for the owner's choice. The database driver
+ * would otherwise wait about 5 s to find a server when MongoDB is down; best
+ * rated is a fine answer much sooner than that.
+ */
+const DEFAULT_FEATURED_TIMEOUT_MS = 1000;
+
+export interface CatalogueOptions {
+  featuredTimeoutMs?: number;
+}
 
 export interface CategoryListing {
   category: Category;
@@ -20,12 +32,22 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Curly apostrophes become straight ones, on both the term and the product
+ * text: phones and word processors type "men’s", Fake Store writes "men's",
+ * and a customer should not have to know which.
+ */
+function normaliseApostrophes(text: string): string {
+  return text.replace(/[‘’]/g, "'");
+}
+
 /** All catalogue rules live here; it knows nothing about HTTP or Fake Store. */
 export class CatalogueService {
   constructor(
     private readonly source: ProductSource,
     private readonly featured: FeaturedStore,
     private readonly log: CatalogueLogger = console,
+    private readonly options: CatalogueOptions = {},
   ) {}
 
   async listCategories(): Promise<Category[]> {
@@ -39,13 +61,17 @@ export class CatalogueService {
    * The owner's chosen products, in their order. Ids the source no longer has
    * are skipped (with a warning), and gaps are filled with the best rated
    * products, so the home page always shows five (or everything, if the
-   * catalogue is smaller). If the choice cannot be read at all, the home page
-   * falls back to best rated rather than failing.
+   * catalogue is smaller). If the choice cannot be read at all, or not within
+   * the timeout, the home page falls back to best rated rather than failing.
    */
   async getFeatured(): Promise<Product[]> {
     const [products, chosenIds] = await Promise.all([
       this.source.getAll(),
-      this.featured.getIds().catch((error: unknown) => {
+      withTimeout(
+        this.featured.getIds(),
+        this.options.featuredTimeoutMs ?? DEFAULT_FEATURED_TIMEOUT_MS,
+        "Reading the featured products",
+      ).catch((error: unknown) => {
         this.log.warn("Could not read the featured products; showing best rated", error);
         return [] as string[];
       }),
@@ -91,10 +117,10 @@ export class CatalogueService {
   /**
    * Every word of the term must match the start of a word in the title,
    * description or category name, ignoring case. So "jack" finds "Jacket",
-   * but "men" does not find "women's".
+   * but "men" does not find "women's". A curly apostrophe matches a straight one.
    */
   async search(term: string): Promise<Product[]> {
-    const patterns = term
+    const patterns = normaliseApostrophes(term)
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean)
@@ -102,7 +128,9 @@ export class CatalogueService {
     if (patterns.length === 0) return [];
     const products = await this.source.getAll();
     return products.filter((p) => {
-      const text = `${p.title} ${p.description} ${p.category.name}`.toLowerCase();
+      const text = normaliseApostrophes(
+        `${p.title} ${p.description} ${p.category.name}`,
+      ).toLowerCase();
       return patterns.every((pattern) => pattern.test(text));
     });
   }

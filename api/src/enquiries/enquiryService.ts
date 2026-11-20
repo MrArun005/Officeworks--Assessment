@@ -1,5 +1,6 @@
-import type { CatalogueService } from "../catalogue/catalogueService.js";
+import type { Product } from "../domain/product.js";
 import type { EmailSender } from "../email/emailSender.js";
+import { withTimeout } from "../timeout.js";
 import type { Enquiry, EnquiryInput } from "./enquiry.js";
 import { buildEnquiryEmail } from "./enquiryEmail.js";
 import type { EnquiryRepository } from "./enquiryRepository.js";
@@ -15,26 +16,18 @@ export interface EnquiryMailSettings {
 
 const DEFAULT_SEND_TIMEOUT_MS = 6000;
 
-/** Rejects if the promise has not settled in time. The work is not cancelled. */
-function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`${what} timed out after ${ms} ms`)), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (error: unknown) => {
-        clearTimeout(timer);
-        reject(error);
-      },
-    );
-  });
+/**
+ * All an enquiry needs from the catalogue. An interface rather than
+ * CatalogueService itself, so enquiries do not depend on the whole catalogue
+ * and tests can pass a one-method fake.
+ */
+export interface ProductLookup {
+  getProduct(id: string): Promise<Product>;
 }
 
 export class EnquiryService {
   constructor(
-    private readonly catalogue: CatalogueService,
+    private readonly catalogue: ProductLookup,
     private readonly repository: EnquiryRepository,
     private readonly email: EmailSender,
     private readonly mail: EnquiryMailSettings,
