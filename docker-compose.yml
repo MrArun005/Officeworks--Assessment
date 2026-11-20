@@ -28,10 +28,17 @@ services:
       MONGODB_URI: mongodb://mongo:27017
       MONGODB_DB: ${MONGODB_DB:-catalogue}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
-      # Fixed to the Mailpit container: a host-side SMTP_HOST in .env (used
-      # when running the API outside Docker) must not leak in here.
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
+      # Mailpit unless .env says otherwise. Setting SMTP_HOST/PORT/USER/PASS
+      # switches to a real provider such as Amazon SES with no code change.
+      # A blank SMTP_SECURE counts as unset, so the port decides TLS. This used to be fixed to Mailpit so a
+      # host-side SMTP_HOST=localhost (for running the API outside Docker)
+      # could not leak in; .env.example now keeps those lines commented out,
+      # so the default stays Mailpit unless someone sets them on purpose.
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_SECURE: ${SMTP_SECURE:-}
       MAIL_FROM: ${MAIL_FROM:-catalogue@example.test}
       SALES_INBOX: ${SALES_INBOX:-sales@example.test}
       # For the "View product" link in the sales email. Change it together
