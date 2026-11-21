@@ -79,7 +79,7 @@ function EnquiryFormInner({
           Thank you
         </h2>
         <p>
-          Your enquiry about <strong>{productTitle}</strong> has been sent. Our sales
+          Your enquiry about <strong>{productTitle}</strong> has been received. Our sales
           team will be in touch.
         </p>
         {onward && <p className="notice__actions">{onward}</p>}
